@@ -2,9 +2,9 @@ import java.util.Scanner;
 import java.awt.Point;
 
 public class App{
-    private static final int DIVERSITER_RSC = NameRessource.values().length;  // Nb de ressources différentes
-    private static int nbColonEtRsc; // Nb de colons et ressources
-    private static Scanner sc = new Scanner(System.in);
+    private static final int DIVERSITER_RSC = NameRessource.values().length;  // Nb de ressources differentes
+    private static int nbColonEtRsc; // Nb de colons et de ressources
+    private static Scanner sc = new Scanner(System.in); // Scanner sur stdin
     private static Capitaine cap;   //capitaine de la simulation
 
     public static void main(String[] args){
@@ -15,8 +15,7 @@ public class App{
     private static void game(){
         initNbColon();  // Initialise le nombre de colons
         cap = new Capitaine(DIVERSITER_RSC, new Colonie(nbColonEtRsc, DIVERSITER_RSC));
-        Colonie colo = cap.getColonie();  // Récupère la colonie
-        colo.generateRandomColo();  // Génère les relations sociales entre colons
+        cap.getColonie().generateRandomColo();  // Genere les relations sociales entre colons
 
         mainMenu();  // Lance le menu principal
     }
@@ -44,8 +43,12 @@ public class App{
                 // Fin de l'initialisation passe a la resolution
                 case "3":
                     // CHECK ME
-                    for(int i = 0; i < cap.getColonie().population.length; i++)
-                        cap.getColonie().population[i].setRandomPreference();
+                    Colon[] pop = cap.getColonie().getPopulation();
+
+                    for(int i = 0; i < pop.length; i++){
+                        pop[i].setRandomPreference();
+                    }
+                    // END
 
                     if(verifierPreferences()){
                         menuEchange();
@@ -128,16 +131,17 @@ public class App{
             }
         }
         // Si tout c'est bien passe
-        cap.getColonie().population[colon].setPreference(rsc);  // Definit les preferences du colon
+        cap.getColonie().getPopulation()[colon].setPreference(rsc);  // Definit les preferences du colon
     }
 
     // Methode pour verifier les preferences des colons
     private static boolean verifierPreferences(){
         Colonie colo = cap.getColonie();
         boolean isGood = true;
+        Colon[] pop = colo.getPopulation();
 
-        for(int i = 0; i < colo.population.length; i++){
-            if(colo.population[i].getPreference()[DIVERSITER_RSC - 1] == null){
+        for(int i = 0; i < pop.length; i++){
+            if(pop[i].getPreference()[DIVERSITER_RSC - 1] == null){
                 isGood = false;
                 System.out.println("Le colon " + i + " n'a pas de préférences complètes.");
             }

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-javac TestColonie.java
-java TestColonie
+javac App.java
+java App
 
 rm *.class
