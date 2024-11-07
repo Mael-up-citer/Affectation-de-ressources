@@ -1,79 +1,131 @@
-
-public class Capitaine{
-    // ressources qui seront a repartir. rsc[0] = qttEAU; rsc[1] = qttPAIN; etc  suis l'ordre de l'enum
+public class Capitaine {
+    // Ressources à répartir; chaque index représente une ressource selon l'ordre de l'enum NameRessource
     private int[] ressources;
-    private Colonie colo;   // Contient la colonie du capitaine
 
-    Capitaine(int divRsc, Colonie c){
-        ressources = new int[divRsc];   // Alloue un tableau de longueur = diversiter des ressources
-        colo = c;  // Associer le capitaine a cette colonie
+    // Colonie associée au capitaine
+    private Colonie colo;
+
+    /**
+     * Constructeur de la classe Capitaine.
+     * Initialise les ressources et assigne la colonie.
+     * 
+     * @param divRsc Nombre de types différents de ressources
+     * @param c Colonie qui sera gérée par le capitaine
+     */
+    public Capitaine(int divRsc, Colonie c) {
+        ressources = new int[divRsc]; // Initialise le tableau de ressources
+        colo = c;  // Associe cette colonie au capitaine
     }
 
-    // Remplie les ressources de facon aleatoire
-    public void retourDeMission(){
-        int qtt;    // qtt pour une ressource
-        int nbRsc = colo.getPopulation().length;    // Nombre de rsc a repartir
+    /**
+     * Remplit aléatoirement les ressources disponibles après une mission.
+     * La dernière ressource reçoit le reste pour assurer un total fixe.
+     */
+    public void retourDeMission() {
+        int qtt;  // Quantité actuelle pour chaque ressource
+        int nbRsc = colo.getPopulation().length;  // Nombre total de ressources à répartir
 
-        // Itere autant qu'il y a de ressource differente -1
-        for(int i = 0; i < ressources.length-1; i++){
-            qtt = (int)(Math.random() * nbRsc); // Qtt courante que l'on va affecter
-            nbRsc -= qtt; // decompte le rsc que l'on vient de mettre
-            ressources[i] = qtt; // Ajoute la qtt a cette ressource
+        // Remplit chaque ressource sauf la dernière
+        for (int i = 0; i < ressources.length - 1; i++) {
+            qtt = (int)(Math.random() * nbRsc);  // Génère une quantité aléatoire pour la ressource actuelle
+            nbRsc -= qtt;  // Réduit le nombre total de ressources restantes
+            ressources[i] = qtt;  // Assigne la quantité générée
         }
-        ressources[ressources.length-1] = nbRsc;  // Met le reste au dernier elmt
+        ressources[ressources.length - 1] = nbRsc;  // Affecte le reste à la dernière ressource
     }
 
-    // Repartie naivement les ressources entre colon et retourne le nombre de jalou
-    public void repartitionNaive(){
-        Colon[] pop = colo.getPopulation();
-        int cpt = 0;
+    /**
+     * Répartit les ressources entre les colons de manière naïve.
+     * Chaque colon reçoit la première ressource dans sa liste de préférences encore disponible.
+     */
+    public void repartitionNaive() {
+        Colon[] pop = colo.getPopulation();  // Récupère la population de colons
+        int cpt;  // Index de la ressource préférée
 
-        // Pour chaque colon faire
-        for(int i = 0; i < pop.length; i++){
-            cpt = 0;    // Index de la ressource que l'on tente d'allouer
+        // Parcourt chaque colon pour affecter les ressources
+        for (int i = 0; i < pop.length; i++) {
+            cpt = 0;  // Commence à la première préférence
 
-            // Tant que la ressource que l'on veut affecter n'est plus dispo
-            while(ressources[pop[i].getPreference()[cpt].getValeur()] == 0)
-                cpt++; // Passe a la suivante
+            // Trouve la première ressource dans les préférences encore disponible
+            while (ressources[pop[i].getPreference()[cpt].getValeur()] == 0)
+                cpt++;  // Passe à la préférence suivante
 
-            pop[i].setRankAllocRsc(cpt);  // Set le rang de sa ressource
-            ressources[pop[i].getPreference()[cpt].getValeur()]--;  // Decremente le nombre de cette ressource
+            pop[i].setRankAllocRsc(cpt);  // Enregistre l'index de la ressource allouée
+            ressources[pop[i].getPreference()[cpt].getValeur()]--;  // Diminue la quantité de cette ressource
         }
     }
 
-    // Affiche les ressources disponible
-    public void displayRsc(){
+    /**
+     * Répartit les ressources de façon intelligente.
+     * Utilise une première répartition naïve, puis analyse les conflits de jalousie.
+     */
+    public void repartitionIntelligente() {
+        repartitionNaive();  // Réalise une répartition initiale
+        int nbConflits = colo.countConflict();  // Compte les conflits de jalousie après répartition
+        // La logique supplémentaire pour optimiser la répartition pourrait être ajoutée ici
+    }
+
+    /**
+     * Affiche la quantité disponible de chaque ressource.
+     */
+    public void displayRsc() {
         for (int i = 0; i < ressources.length; i++)
             System.out.println("Nous avons " + ressources[i] + " " + NameRessource.values()[i]);
     }
 
-    public void dispSystemSate(){
+    /**
+     * Affiche l'état actuel des ressources allouées pour chaque colon.
+     */
+    public void dispSystemSate() {
         Colon[] pop = colo.getPopulation();
 
-        System.out.println("État du system:");
-        // Parcour la population
-        for(int i = 0; i < pop.length; i++)
-            // Affiche la ressource affecte au colon i
-            System.out.println(i+":"+pop[i].getPreference()[pop[i].getRankAllocRsc()]);
+        System.out.println("État du système:");
+        // Affiche les ressources affectées pour chaque colon
+        for (int i = 0; i < pop.length; i++)
+            System.out.println(i + ":" + pop[i].getPreference()[pop[i].getRankAllocRsc()]);
     }
 
-    // Getter des ressources
-    public int[] getRessources(){
+    /**
+     * Affiche les types de ressources disponibles sans les quantités.
+     */
+    public void affRscDispo() {
+        NameRessource[] rsc = NameRessource.values();
+
+        System.out.println("Ressources à répartir:");
+        // Affiche chaque type de ressource
+        for (int i = 0; i < rsc.length; i++)
+            System.out.println(rsc[i]);
+    }
+
+    /**
+     * Accesseur pour les ressources.
+     * @return Le tableau des quantités de chaque ressource
+     */
+    public int[] getRessources() {
         return ressources;
     }
 
-    // Setter des ressources
-    public void setRessources(int[] rsc){
+    /**
+     * Mutateur pour les ressources.
+     * @param rsc Nouveau tableau des quantités de ressources
+     */
+    public void setRessources(int[] rsc) {
         ressources = rsc;
     }
 
-    // Getter de la colo
-    public Colonie getColonie(){
+    /**
+     * Accesseur pour la colonie associée au capitaine.
+     * @return La colonie gérée par le capitaine
+     */
+    public Colonie getColonie() {
         return colo;
     }
 
-    // Setter de la colo
-    public void setColonie(Colonie c){
+    /**
+     * Mutateur pour la colonie associée.
+     * @param c Nouvelle colonie à associer au capitaine
+     */
+    public void setColonie(Colonie c) {
         colo = c;
     }
 }

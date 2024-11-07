@@ -1,28 +1,43 @@
 import java.util.Scanner;
 import java.awt.Point;
 
-public class App{
-    private static final int DIVERSITER_RSC = NameRessource.values().length;  // Nb de ressources differentes
-    private static int nbColonEtRsc; // Nb de colons et de ressources
-    private static Scanner sc = new Scanner(System.in); // Scanner sur stdin
-    private static Capitaine cap;   //capitaine de la simulation
+public class App {
+    // Nombre de types de ressources différentes disponibles
+    private static final int DIVERSITER_RSC = NameRessource.values().length;
+    
+    // Nombre de colons et de ressources, défini par l'utilisateur
+    private static int nbColonEtRsc;
+    
+    // Scanner pour les entrées utilisateur
+    private static Scanner sc = new Scanner(System.in);
+    
+    // Instance du capitaine de la simulation
+    private static Capitaine cap;
 
-    public static void main(String[] args){
+    /**
+     * Point d'entrée principal de l'application.
+     * @param args arguments de la ligne de commande (non utilisés)
+     */
+    public static void main(String[] args) {
         game();  // Lance la simulation
     }
 
-    // Methode principale du jeu
-    private static void game(){
+    /**
+     * Initialise et lance le jeu, en configurant le nombre de colons et le capitaine.
+     */
+    private static void game() {
         initNbColon();  // Initialise le nombre de colons
         cap = new Capitaine(DIVERSITER_RSC, new Colonie(nbColonEtRsc, DIVERSITER_RSC));
-        cap.getColonie().generateRandomColo();  // Genere les relations sociales entre colons
+        cap.getColonie().generateRandomColo();  // Génère des relations sociales aléatoires entre colons
 
         mainMenu();  // Lance le menu principal
     }
 
-    // Menu principal
-    private static void mainMenu(){
-        while(true){
+    /**
+     * Affiche et gère le menu principal du jeu.
+     */
+    private static void mainMenu() {
+        while (true) {
             System.out.println("\nMenu :");
             System.out.println("1) Ajouter une relation de jalousie entre deux colons");
             System.out.println("2) Ajouter les préférences d'un colon");
@@ -31,30 +46,19 @@ public class App{
 
             String choix = sc.nextLine();
 
-            switch(choix){
-                // Ajouter une relation entre deux colons
+            switch (choix) {
                 case "1":
-                    ajouterRelationJalousie();
+                    ajouterRelationJalousie();  // Ajoute une relation de jalousie entre deux colons
                     break;
-                // Ajouter les preferences d’un colon;
                 case "2":
-                    ajouterPreferences();
+                    ajouterPreferences();  // Ajoute les préférences d'un colon
                     break;
-                // Fin de l'initialisation passe a la resolution
                 case "3":
-                    // CHECK ME
-                    Colon[] pop = cap.getColonie().getPopulation();
-
-                    for(int i = 0; i < pop.length; i++){
-                        pop[i].setRandomPreference();
-                    }
-                    // END
-
-                    if(verifierPreferences()){
+                    // Si les préférences sont valides, lance le menu d'échange
+                    if (verifierPreferences())
                         menuEchange();
-                    }
+
                     break;
-                // Si la saisi n'a pas de correspondance
                 default:
                     System.out.println("Choix invalide, veuillez réessayer.");
                     break;
@@ -62,10 +66,12 @@ public class App{
         }
     }
 
-    // Sous-menu d'échange des ressources
-    private static void menuEchange(){
-        while(true){
-            cap.dispSystemSate();  // Affiche l'etat du système
+    /**
+     * Affiche et gère le sous-menu d'échange des ressources.
+     */
+    private static void menuEchange() {
+        while (true) {
+            cap.dispSystemSate();  // Affiche l'état du système
 
             System.out.println("\nMenu d'échange :");
             System.out.println("1) Échanger les ressources de deux colons");
@@ -75,19 +81,15 @@ public class App{
 
             String choixEchange = sc.nextLine();
 
-            switch(choixEchange){
-                // Echanger les ressources de deux colons
+            switch (choixEchange) {
                 case "1":
-                    echangerRessources();
+                    echangerRessources();  // Échange les ressources entre deux colons
                     break;
-                // Afficher le nombre de colons jaloux
                 case "2":
-                    afficherNombreColonsJaloux();
+                    afficherNombreColonsJaloux();  // Affiche le nombre de colons jaloux
                     break;
-                // termine le programme
                 case "3":
-                    System.exit(0);
-                // Si la saisi n'a pas de correspondance
+                    System.exit(0);  // Termine le programme
                 default:
                     System.out.println("Choix invalide, veuillez réessayer.");
                     break;
@@ -95,135 +97,156 @@ public class App{
         }
     }
 
-    // Methode pour ajouter une relation de jalousie
-    private static void ajouterRelationJalousie(){
-        Point p = get2Colon();  // Recupere deux colons
-        cap.getColonie().relation(1, p.x, p.y);  // Cree la relation de jalousie
+    /**
+     * Ajoute une relation de jalousie entre deux colons.
+     */
+    private static void ajouterRelationJalousie() {
+        Point p = get2Colon();  // Récupère deux colons
+        cap.getColonie().changeRelation(1, p.x, p.y);  // Crée la relation de jalousie
     }
 
-    // Methode pour ajouter les preferences d'un colon
-    private static void ajouterPreferences(){
-        NameRessource[] rsc = null; // Tableau de ressource qui va reccevoir la saisie de l'user
-        int colon;  // Colon concerne
+    /**
+     * Ajoute les préférences d'un colon en demandant des saisies utilisateur.
+     */
+    private static void ajouterPreferences() {
+        NameRessource[] rsc = null;  // Tableau pour stocker les préférences
+        int colon;  // Numéro du colon concerné
 
-        while(true){
+        while (true) {
+            cap.affRscDispo();  // Affiche les ressources disponibles
             System.out.print("Entrez le numéro du colon (0-" + (nbColonEtRsc - 1) + ") et " + DIVERSITER_RSC + " ressources dans l'ordre de préférence : ");
             String input = sc.nextLine();
-            // cree un tab qui contient la ligne coupe au espaces
             String[] inputs = input.split(" ");
 
-            // Si la taille de l'input est insuffisante
-            if(inputs.length - 1 != DIVERSITER_RSC)
+            if (inputs.length - 1 != DIVERSITER_RSC)  // Vérifie la validité de l'input
                 System.out.println("Erreur : Vous devez entrer un numéro de colon et exactement " + DIVERSITER_RSC + " ressources.");
-
-            else{
-                try{
+            else {
+                try {
                     colon = Integer.parseInt(inputs[0]);
-                    rsc = parsePreferences(inputs);
+                    rsc = parsePreferences(inputs);  // Analyse et valide les préférences
                     break;
-                // Catch les erreurs lie au numero du colon
-                } catch (NumberFormatException e){
+                } catch (NumberFormatException e) {
                     System.out.println("Erreur : Le numéro du colon doit être un entier.");
-                // Catch les erreurs lie au ressources
-                } catch (IllegalArgumentException e){
+                } catch (IllegalArgumentException e) {
                     System.out.println(e.getMessage());
                 }
             }
         }
-        // Si tout c'est bien passe
-        cap.getColonie().getPopulation()[colon].setPreference(rsc);  // Definit les preferences du colon
+        cap.getColonie().getPopulation()[colon].setPreference(rsc);  // Définit les préférences du colon
     }
 
-    // Methode pour verifier les preferences des colons
-    private static boolean verifierPreferences(){
+    /**
+     * Vérifie que chaque colon a bien défini ses préférences.
+     * @return true si toutes les préférences sont définies, sinon false
+     */
+    private static boolean verifierPreferences() {
         Colonie colo = cap.getColonie();
         boolean isGood = true;
         Colon[] pop = colo.getPopulation();
 
-        for(int i = 0; i < pop.length; i++){
-            if(pop[i].getPreference()[DIVERSITER_RSC - 1] == null){
+        for (int i = 0; i < pop.length; i++) {
+            if (pop[i].getPreference()[DIVERSITER_RSC - 1] == null) {
                 isGood = false;
-                System.out.println("Le colon " + i + " n'a pas de préférences complètes.");
+                System.out.println("Le colon " + i + " n'a pas de préférences.");
             }
         }
         return isGood;
     }
 
-    // Methode pour echanger les ressources de deux colons
-    private static void echangerRessources(){
+    /**
+     * Échange les ressources entre deux colons.
+     */
+    private static void echangerRessources() {
         Point p = get2Colon();
-        cap.getColonie().swapRsc(p.x, p.y);  // Echange les ressources
+        cap.getColonie().swapRsc(p.x, p.y);  // Échange les ressources
     }
 
-    // Affiche le nombre de colons jaloux
-    private static void afficherNombreColonsJaloux(){
+    /**
+     * Affiche le nombre de colons jaloux dans la colonie.
+     */
+    private static void afficherNombreColonsJaloux() {
         int nombreDeJaloux = cap.getColonie().countConflict();
         System.out.println("Il y a " + nombreDeJaloux + " colons jaloux.");
     }
 
-    // Initialise le nombre de colons
-    private static void initNbColon(){
-        while(true){
+    /**
+     * Demande à l'utilisateur de définir le nombre de colons.
+     */
+    private static void initNbColon() {
+        while (true) {
             System.out.print("Entrez le nombre de colons (>= 1) : ");
-            try{
+            try {
                 nbColonEtRsc = Integer.parseInt(sc.nextLine());
                 if (nbColonEtRsc >= 1) break;
                 else System.out.println("Le nombre doit être supérieur ou égal à 1.");
-            } catch (NumberFormatException e){
+            } catch (NumberFormatException e) {
                 System.out.println("Veuillez entrer un nombre entier.");
             }
         }
     }
 
-    // Obtient deux colons
-    private static Point get2Colon(){
+    /**
+     * Demande et obtient les numéros de deux colons différents.
+     * @return une instance Point contenant les numéros des deux colons
+     */
+    private static Point get2Colon() {
         int colon1, colon2;
 
-        while (true){
+        while (true) {
             colon1 = demanderColon("premier");
             colon2 = demanderColon("deuxième");
-            if (colon1 != colon2) 
+            if (colon1 != colon2)
                 break;
-            else 
+            else
                 System.out.println("Les deux colons doivent être différents.");
         }
 
         return new Point(colon1, colon2);
     }
 
-    // Demande à l'utilisateur un numero de colon valide
-    private static int demanderColon(String position){
+    /**
+     * Demande à l'utilisateur un numéro de colon spécifique.
+     * @param position position du colon (premier ou deuxième)
+     * @return le numéro de colon saisi
+     */
+    private static int demanderColon(String position) {
         int colon;
-        while(true){
+        while (true) {
             System.out.print("Entrez le numéro du " + position + " colon (0-" + (nbColonEtRsc - 1) + ") : ");
-            try{
+            try {
                 colon = Integer.parseInt(sc.nextLine());
                 if (isValideColon(colon)) return colon;
                 else System.out.println("Numéro de colon invalide.");
-            } catch (NumberFormatException e){
+            } catch (NumberFormatException e) {
                 System.out.println("Veuillez entrer un nombre entier.");
             }
         }
     }
 
-    // Valide un numero de colon
-    private static boolean isValideColon(int c){
+    /**
+     * Vérifie si le numéro de colon est valide par rapport au nombre total de colons.
+     * @param c numéro de colon à valider
+     * @return true si le numéro est dans la plage valide, sinon false
+     */
+    private static boolean isValideColon(int c) {
         return (c >= 0 && c < nbColonEtRsc);
     }
 
-    // Analyse et valide les preferences
-    private static NameRessource[] parsePreferences(String[] inputs){
+    /**
+     * Analyse et valide les préférences des colons à partir de l'entrée utilisateur.
+     * Crée un tableau de préférences contenant les types de ressources dans l'ordre de préférence.
+     * @param inputs tableau contenant les préférences sous forme de chaînes de caractères
+     * @return un tableau NameRessource contenant les préférences dans l'ordre saisi
+     * @throws IllegalArgumentException si une ressource est invalide
+     */
+    private static NameRessource[] parsePreferences(String[] inputs) {
         NameRessource[] rsc = new NameRessource[DIVERSITER_RSC];
-        int[] suivi = new int[DIVERSITER_RSC];
-
-        for(int i = 0; i < DIVERSITER_RSC; i++){
-            NameRessource ressource = NameRessource.valueOf(inputs[i + 1].toUpperCase());
-
-            if (suivi[ressource.getValeur()] == 1)
-                throw new IllegalArgumentException("Erreur : La ressource '" + ressource + "' est déjà utilisée.");
-
-            suivi[ressource.getValeur()] = 1;
-            rsc[i] = ressource;
+        for (int i = 0; i < DIVERSITER_RSC; i++) {
+            try {
+                rsc[i] = NameRessource.valueOf(inputs[i + 1]);  // Convertit les ressources saisies en enums
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Ressource invalide : " + inputs[i + 1]);
+            }
         }
         return rsc;
     }
