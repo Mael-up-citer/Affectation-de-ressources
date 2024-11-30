@@ -1,16 +1,13 @@
 import java.util.Scanner;
 import java.awt.Point;
 
-public class App {
-    // Nombre de types de ressources différentes disponibles
-    private static final int DIVERSITER_RSC = NameRessource.values().length;
-    
+public class App {    
     // Nombre de colons et de ressources, défini par l'utilisateur
     private static int nbColonEtRsc;
-    
+
     // Scanner pour les entrées utilisateur
     private static Scanner sc = new Scanner(System.in);
-    
+
     // Instance du capitaine de la simulation
     private static Capitaine cap;
 
@@ -27,7 +24,7 @@ public class App {
      */
     private static void game() {
         initNbColon();  // Initialise le nombre de colons
-        cap = new Capitaine(DIVERSITER_RSC, new Colonie(nbColonEtRsc, DIVERSITER_RSC));
+        cap = new Capitaine(nbColonEtRsc, new Colonie(nbColonEtRsc));
         cap.getColonie().generateRandomColo();  // Génère des relations sociales aléatoires entre colons
 
         mainMenu();  // Lance le menu principal
@@ -109,17 +106,18 @@ public class App {
      * Ajoute les préférences d'un colon en demandant des saisies utilisateur.
      */
     private static void ajouterPreferences() {
-        NameRessource[] rsc = null;  // Tableau pour stocker les préférences
+        Ressource[] rsc = null;  // Tableau pour stocker les préférences
         int colon;  // Numéro du colon concerné
 
         while (true) {
             cap.affRscDispo();  // Affiche les ressources disponibles
-            System.out.print("Entrez le numéro du colon (0-" + (nbColonEtRsc - 1) + ") et " + DIVERSITER_RSC + " ressources dans l'ordre de préférence : ");
+            System.out.print("Entrez le numéro du colon (0-" + (nbColonEtRsc - 1) + ") et " + nbColonEtRsc + " ressources dans l'ordre de préférence : ");
             String input = sc.nextLine();
+            input = input.toUpperCase();
             String[] inputs = input.split(" ");
 
-            if (inputs.length - 1 != DIVERSITER_RSC)  // Vérifie la validité de l'input
-                System.out.println("Erreur : Vous devez entrer un numéro de colon et exactement " + DIVERSITER_RSC + " ressources.");
+            if (inputs.length - 1 != nbColonEtRsc)  // Vérifie la validité de l'input
+                System.out.println("Erreur : Vous devez entrer un numéro de colon et exactement " + nbColonEtRsc + " ressources.");
             else {
                 try {
                     colon = Integer.parseInt(inputs[0]);
@@ -145,7 +143,7 @@ public class App {
         Colon[] pop = colo.getPopulation();
 
         for (int i = 0; i < pop.length; i++) {
-            if (pop[i].getPreference()[DIVERSITER_RSC - 1] == null) {
+            if (pop[i].getPreference() == null) {
                 isGood = false;
                 System.out.println("Le colon " + i + " n'a pas de préférences.");
             }
@@ -236,14 +234,15 @@ public class App {
      * Analyse et valide les préférences des colons à partir de l'entrée utilisateur.
      * Crée un tableau de préférences contenant les types de ressources dans l'ordre de préférence.
      * @param inputs tableau contenant les préférences sous forme de chaînes de caractères
-     * @return un tableau NameRessource contenant les préférences dans l'ordre saisi
+     * @return un tableau Ressource contenant les préférences dans l'ordre saisi
      * @throws IllegalArgumentException si une ressource est invalide
      */
-    private static NameRessource[] parsePreferences(String[] inputs) {
-        NameRessource[] rsc = new NameRessource[DIVERSITER_RSC];
-        for (int i = 0; i < DIVERSITER_RSC; i++) {
+    private static Ressource[] parsePreferences(String[] inputs) {
+        Ressource[] rsc = new Ressource[nbColonEtRsc];
+
+        for (int i = 1; i < nbColonEtRsc; i++) {
             try {
-                rsc[i] = NameRessource.valueOf(inputs[i + 1]);  // Convertit les ressources saisies en enums
+                rsc[i] = cap.getRessources()[Ressource.getNameToId().get(inputs[i])];
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Ressource invalide : " + inputs[i + 1]);
             }
