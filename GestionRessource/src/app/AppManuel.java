@@ -1,154 +1,238 @@
 package app;
 
-import java.util.List;
-
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import partie1.Colonie;
 
-/**
- * Classe représentant l'interface utilisateur manuelle de gestion de colonie.
- * Cette classe permet à l'utilisateur de configurer une colonie en ajoutant des colons,
- * des relations entre les colons et leurs préférences, puis de finaliser la configuration.
- */
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.*;
+
 public class AppManuel {
-    private Colonie colonie;
 
-    /**
-     * Constructeur de la classe AppManuel.
-     * Initialise une nouvelle colonie vide.
-     */
-    public AppManuel() {
-        colonie = new Colonie();
-    }
+	private Colonie colonie;
+	private Map<String, String> solution;
 
-    /**
-     * Affiche l'interface utilisateur permettant à l'utilisateur de configurer la colonie.
-     * Cette méthode crée la fenêtre principale, gère les actions des boutons et les dialogues associés
-     * pour ajouter des colons, des relations et des préférences.
-     * 
-     * @param stage La fenêtre principale de l'application.
-     */
-    public void afficher(Stage stage) {
-        // Créer la scène principale
-        VBox root = new VBox(10);
-        root.setPadding(new Insets(10));
+	public AppManuel() {
+		colonie = new Colonie();
+	}
 
-        Label instructionLabel = new Label("Entrez le nombre de colons (max 26) :");
-        TextField colonsField = new TextField();
-        Button confirmerButton = new Button("Confirmer");
+	public void afficher(Stage stage) {
 
-        // Conteneur pour les menus après la configuration initiale
-        VBox menuBox = new VBox(10);
-        menuBox.setVisible(false);
+		VBox mainLayout = new VBox(10);
+		mainLayout.setStyle("-fx-padding: 10; -fx-spacing: 10;");
 
-        Label colonMenuLabel = new Label("Menu :");
-        Button ajouterRelationButton = new Button("Ajouter une relation 'ne s’aiment pas'");
-        Button ajouterPreferencesButton = new Button("Ajouter les préférences d’un colon");
-        Button finConfigurationButton = new Button("Terminer la configuration");
+		Scene scene = new Scene(mainLayout, 600, 400);
 
-        menuBox.getChildren().addAll(colonMenuLabel, ajouterRelationButton, ajouterPreferencesButton,
-                finConfigurationButton);
+		Label titleLabel = new Label("Entrez le nombre de colons (max 26)");
+		titleLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
 
-        root.getChildren().addAll(instructionLabel, colonsField, confirmerButton, menuBox);
+		TextField colonCountField = new TextField();
 
-        Scene scene = new Scene(root, 400, 300);
-        stage.setTitle("Gestion de Colonie");
-        stage.setScene(scene);
-        stage.show();
+		Button initializeButton = new Button("Initialiser la colonie");
+		Label errorLabel = new Label();
+		errorLabel.setStyle("-fx-text-fill: red;");
 
-        // Action pour confirmer le nombre de colons
-        confirmerButton.setOnAction(e -> {
-            try {
-                int n = Integer.parseInt(colonsField.getText());
-                if (n <= 0 || n > 26) {
-                    showAlert(Alert.AlertType.ERROR, "Erreur", "Le nombre de colons doit être entre 1 et 26.");
-                } else {
-                    // Ajouter les colons
-                    for (int i = 0; i < n; i++) {
-                        colonie.ajouterColon(String.valueOf((char) ('A' + i)));
-                    }
-                    showAlert(Alert.AlertType.INFORMATION, "Succès", n + " colons ajoutés.");
-                    colonsField.setDisable(true);
-                    confirmerButton.setDisable(true);
-                    menuBox.setVisible(true);
-                }
-            } catch (NumberFormatException ex) {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "Veuillez entrer un nombre entier valide.");
-            }
-        });
+		initializeButton.setOnAction(e -> {
+			try {
+				int colonCount = Integer.parseInt(colonCountField.getText());
+				if (colonCount <= 0 || colonCount > 26) {
+					throw new IllegalArgumentException("Le nombre de colons doit être entre 1 et 26.");
+				}
 
-        // Action pour ajouter une relation "ne s’aiment pas"
-        ajouterRelationButton.setOnAction(e -> {
-            TextInputDialog dialog = new TextInputDialog();
-            dialog.setTitle("Ajouter une relation");
-            dialog.setHeaderText("Ajouter une relation 'ne s’aiment pas'");
-            dialog.setContentText("Entrez les noms des deux colons séparés par un espace :");
+				for (int i = 0; i < colonCount; i++) {
+					colonie.ajouterColon(String.valueOf((char) ('A' + i)));
+				}
+				initialiserRessources(colonCount);
+				afficherMenuConfiguration(stage);
+			} catch (NumberFormatException ex) {
+				errorLabel.setText("Veuillez entrer un nombre entier valide.");
+			} catch (IllegalArgumentException ex) {
+				errorLabel.setText(ex.getMessage());
+			}
+		});
 
-            dialog.showAndWait().ifPresent(input -> {
-                try {
-                    String[] noms = input.split(" ");
-                    if (noms.length != 2) {
-                        throw new IllegalArgumentException("Veuillez entrer exactement deux colons.");
-                    }
-                    colonie.ajouterRelation(noms[0], noms[1]);
-                    showAlert(Alert.AlertType.INFORMATION, "Succès",
-                            "Relation ajoutée entre " + noms[0] + " et " + noms[1] + ".");
-                } catch (IllegalArgumentException ex) {
-                    showAlert(Alert.AlertType.ERROR, "Erreur", ex.getMessage());
-                }
-            });
-        });
+		mainLayout.getChildren().addAll(titleLabel, colonCountField, initializeButton, errorLabel);
 
-        // Action pour ajouter les préférences d'un colon
-        ajouterPreferencesButton.setOnAction(e -> {
-            TextInputDialog dialog = new TextInputDialog();
-            dialog.setTitle("Ajouter des préférences");
-            dialog.setHeaderText("Ajouter les préférences d’un colon");
-            dialog.setContentText("Entrez le nom du colon suivi de ses préférences (ex : A 1 2 3 ...) :");
+		stage.setTitle("Gestion de la colonie");
+		stage.setScene(scene);
+		stage.show();
+	}
 
-            dialog.showAndWait().ifPresent(input -> {
-                try {
-                    String[] parts = input.split(" ");
-                    String nom = parts[0];
-                    List<String> preferences = List.of(parts).subList(1, parts.length);
-                    colonie.ajouterPreferences(nom, preferences);
-                    showAlert(Alert.AlertType.INFORMATION, "Succès", "Préférences ajoutées pour " + nom + ".");
-                } catch (IllegalArgumentException ex) {
-                    showAlert(Alert.AlertType.ERROR, "Erreur", ex.getMessage());
-                }
-            });
-        });
+	private void initialiserRessources(int nombreColons) {
+		colonie.getRessources().clear();
+		for (int i = 1; i <= nombreColons; i++) {
+			colonie.ajouterRessource(String.valueOf(i));
+		}
+	}
 
-        // Action pour terminer la configuration
-        finConfigurationButton.setOnAction(e -> {
-            boolean tousLesColonsOntPreferences = colonie.getColons().values().stream()
-                    .allMatch(colon -> colon.getPreferences() != null);
+	private void afficherMenuConfiguration(Stage stage) {
+		VBox configLayout = new VBox(10);
+		configLayout.setStyle("-fx-padding: 10; -fx-spacing: 10;");
 
-            if (tousLesColonsOntPreferences) {
-                colonie.afficherAffectations();
-                showAlert(Alert.AlertType.INFORMATION, "Succès", "Configuration terminée.");
-                // Transition vers une autre étape ou fermer la fenêtre si nécessaire
-            } else {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "Tous les colons doivent avoir des préférences.");
-            }
-        });
-    }
+		Label menuLabel = new Label("Menu de configuration");
+		menuLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
 
-    /**
-     * Affiche une alerte dans l'interface graphique.
-     * 
-     * @param alertType Le type d'alerte (par exemple, erreur ou information).
-     * @param title Le titre de l'alerte.
-     * @param message Le message à afficher dans l'alerte.
-     */
-    private void showAlert(Alert.AlertType alertType, String title, String message) {
-        Alert alert = new Alert(alertType);
-        alert.setTitle(title);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
+		Button addRelationButton = new Button("Ajouter une relation 'ne s’aiment pas'");
+		Button addPreferencesButton = new Button("Ajouter les préférences d’un colon");
+		Button finishButton = new Button("Terminer la configuration");
+
+		addRelationButton.setOnAction(e -> afficherAjoutRelation(stage));
+		addPreferencesButton.setOnAction(e -> afficherAjoutPreferences(stage));
+		finishButton.setOnAction(e -> {
+			if (colonie.estConfigurationComplete()) {
+				solution = colonie.genererSolutionNaive();
+				afficherMenuSimulation(stage);
+			} else {
+				Alert alert = new Alert(Alert.AlertType.ERROR);
+				alert.setContentText("Tous les colons doivent avoir des préférences complètes avant de terminer.");
+				alert.showAndWait();
+			}
+		});
+
+		configLayout.getChildren().addAll(menuLabel, addRelationButton, addPreferencesButton, finishButton);
+		stage.getScene().setRoot(configLayout);
+	}
+
+	private void afficherAjoutRelation(Stage primaryStage) {
+		VBox relationLayout = new VBox(10);
+
+		Label titleLabel = new Label("Entrez les noms de deux colons séparés par un espace");
+		TextField relationField = new TextField();
+		Button addButton = new Button("Ajouter");
+		Label errorLabel = new Label();
+		errorLabel.setStyle("-fx-text-fill: red;");
+
+		addButton.setOnAction(e -> {
+			try {
+				String[] noms = relationField.getText().split(" ");
+				if (noms.length != 2) {
+					throw new IllegalArgumentException("Veuillez entrer exactement deux noms de colons.");
+				}
+				colonie.ajouterRelation(noms[0], noms[1]);
+				afficherMenuConfiguration(primaryStage);
+			} catch (IllegalArgumentException ex) {
+				errorLabel.setText(ex.getMessage());
+			}
+		});
+
+		relationLayout.getChildren().addAll(titleLabel, relationField, addButton, errorLabel);
+		primaryStage.getScene().setRoot(relationLayout);
+	}
+
+	private void afficherAjoutPreferences(Stage primaryStage) {
+		VBox preferencesLayout = new VBox(10);
+
+		Label titleLabel = new Label("Entrez le nom du colon suivi de ses préférences (ex : A 1 2 3 ...)");
+		TextField preferencesField = new TextField();
+		Button addButton = new Button("Ajouter");
+		Label errorLabel = new Label();
+		errorLabel.setStyle("-fx-text-fill: red;");
+
+		addButton.setOnAction(e -> {
+			try {
+				String[] input = preferencesField.getText().split(" ");
+				String nom = input[0];
+				List<String> preferences = Arrays.asList(Arrays.copyOfRange(input, 1, input.length));
+				colonie.ajouterPreferences(nom, preferences);
+				afficherMenuConfiguration(primaryStage);
+			} catch (IllegalArgumentException ex) {
+				errorLabel.setText(ex.getMessage());
+			}
+		});
+
+		preferencesLayout.getChildren().addAll(titleLabel, preferencesField, addButton, errorLabel);
+		primaryStage.getScene().setRoot(preferencesLayout);
+	}
+
+	private void afficherMenuSimulation(Stage primaryStage) {
+		VBox simulationLayout = new VBox(10);
+		simulationLayout.setStyle("-fx-padding: 10; -fx-spacing: 10;");
+
+		Label menuLabel = new Label("Menu de simulation");
+		menuLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+
+		Button exchangeButton = new Button("Échanger les ressources de deux colons");
+		Button jealousyButton = new Button("Afficher le nombre de colons jaloux");
+		Button finishButton = new Button("Terminer la simulation");
+
+		TextArea affectationsArea = new TextArea();
+		affectationsArea.setEditable(false);
+		affectationsArea.setPrefHeight(150);
+
+		exchangeButton.setOnAction(e -> afficherEchangeRessources(primaryStage, affectationsArea));
+		jealousyButton.setOnAction(e -> afficherColonsJaloux());
+		finishButton.setOnAction(e -> primaryStage.close());
+
+		simulationLayout.getChildren().addAll(menuLabel, exchangeButton, jealousyButton, finishButton,
+				affectationsArea);
+
+		// Initial display of assignments in the TextArea
+		updateAffectationsDisplay(affectationsArea);
+
+		primaryStage.getScene().setRoot(simulationLayout);
+	}
+
+	private void afficherEchangeRessources(Stage primaryStage, TextArea affectationsArea) {
+		VBox exchangeLayout = new VBox(10);
+
+		Label titleLabel = new Label("Entrez les noms de deux colons séparés par un espace");
+		TextField exchangeField = new TextField();
+		Button exchangeButton = new Button("Échanger");
+		Label errorLabel = new Label();
+		errorLabel.setStyle("-fx-text-fill: red;");
+
+		exchangeButton.setOnAction(e -> {
+			try {
+				String[] noms = exchangeField.getText().split(" ");
+				if (noms.length != 2) {
+					throw new IllegalArgumentException("Veuillez entrer exactement deux noms de colons.");
+				}
+
+				String ressource1 = solution.get(noms[0]);
+				String ressource2 = solution.get(noms[1]);
+
+				if (ressource1 != null && ressource2 != null) {
+					solution.put(noms[0], ressource2);
+					solution.put(noms[1], ressource1);
+				} else {
+					throw new IllegalArgumentException("Les ressources des colons sont inexistantes.");
+				}
+
+				// Update the affectations display
+				updateAffectationsDisplay(affectationsArea);
+				// Retour au menu de simulation après l'échange
+				afficherMenuSimulation(primaryStage);
+
+			} catch (IllegalArgumentException ex) {
+				errorLabel.setText(ex.getMessage());
+			}
+		});
+
+		exchangeLayout.getChildren().addAll(titleLabel, exchangeField, exchangeButton, errorLabel);
+		primaryStage.getScene().setRoot(exchangeLayout);
+	}
+
+	private void updateAffectationsDisplay(TextArea affectationsArea) {
+		// Capture the output of afficherAffectations() and redirect to the TextArea
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		PrintStream printStream = new PrintStream(outputStream);
+		System.setOut(printStream);
+
+		colonie.afficherAffectations();
+
+		// Set the captured output in the TextArea
+		affectationsArea.setText(outputStream.toString());
+
+		// Restore the original System.out
+		System.setOut(System.out);
+	}
+
+	private void afficherColonsJaloux() {
+		Alert alert = new Alert(Alert.AlertType.INFORMATION);
+		alert.setContentText("Nombre de colons jaloux : " + colonie.calculerCout());
+		alert.showAndWait();
+	}
 }
