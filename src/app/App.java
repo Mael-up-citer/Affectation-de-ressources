@@ -18,16 +18,17 @@ import java.util.Map;
 
 /**
  * Classe principale de l'application de gestion de colonie.
- * Cette classe représente l'interface utilisateur principale avec les fonctionnalités permettant de charger un fichier,
- * générer une solution optimisée et sauvegarder la solution dans un fichier.
+ * Cette application JavaFX permet de charger un fichier contenant les données d'une colonie,
+ * de générer une solution optimisée et de sauvegarder cette solution dans un fichier.
  */
 public class App extends Application {
-    private Colonie colonie;
-    private Map<String, String> solution;
+    private Colonie colonie; // Représente la colonie chargée
+    private Map<String, String> solution; // Stocke la solution optimisée
+    private TextArea textArea; // Zone de texte pour afficher les messages à l'utilisateur
 
     /**
-     * Méthode principale d'entrée de l'application JavaFX. Elle initialise la fenêtre principale et les composants de l'interface.
-     * 
+     * Point d'entrée principal de l'application JavaFX.
+     *
      * @param primaryStage La fenêtre principale de l'application.
      */
     @Override
@@ -35,7 +36,7 @@ public class App extends Application {
         colonie = new Colonie();
         solution = null;
 
-        // Création de la fenêtre principale
+        // Titre de la fenêtre principale
         primaryStage.setTitle("Gestion de Colonie");
 
         // Layout principal
@@ -44,47 +45,56 @@ public class App extends Application {
 
         // Bouton pour charger un fichier
         Button btnChargerFichier = new Button("Charger un fichier");
-        btnChargerFichier.setOnAction(event -> chargerFichier(primaryStage));
-
-        // Bouton pour générer une solution optimisée
         Button btnOptimiserSolution = new Button("Résolution automatique");
-        btnOptimiserSolution.setDisable(true); // Désactivé tant qu'aucune colonie n'est chargée
-        btnOptimiserSolution.setOnAction(event -> optimiserSolution());
-
-        // Bouton pour sauvegarder la solution actuelle
         Button btnSauvegarderSolution = new Button("Sauvegarder la solution");
-        btnSauvegarderSolution.setDisable(true); // Désactivé tant qu'aucune solution n'est générée
-        btnSauvegarderSolution.setOnAction(event -> sauvegarderSolution(primaryStage));
+
+        // Configuration initiale des boutons
+        btnOptimiserSolution.setDisable(true);
+        btnSauvegarderSolution.setDisable(true);
 
         // Zone de texte pour afficher les informations
-        TextArea textArea = new TextArea();
+        textArea = new TextArea();
         textArea.setEditable(false);
         textArea.setPrefHeight(300);
 
-        Button btnAccederAppManuel= new Button("Accéder à l'Interface Utilisateur");
-
-        // Action du bouton pour afficher InterfaceUtilisateurJavaFX
+        // Bouton pour accéder à l'interface utilisateur manuelle
+        Button btnAccederAppManuel = new Button("Accéder à l'Interface Utilisateur");
         btnAccederAppManuel.setOnAction(event -> {
             Stage appManuelStage = new Stage();
             AppManuel appManuel = new AppManuel();
             appManuel.afficher(appManuelStage);
         });
 
+        // Actions des boutons
+        btnChargerFichier.setOnAction(event -> {
+            chargerFichier(primaryStage);
+            if (colonie != null && !colonie.getColons().isEmpty()) {
+                btnOptimiserSolution.setDisable(false);
+            }
+        });
+
+        btnOptimiserSolution.setOnAction(event -> {
+            optimiserSolution();
+            if (solution != null && !solution.isEmpty()) {
+                btnSauvegarderSolution.setDisable(false);
+            }
+        });
+
+        btnSauvegarderSolution.setOnAction(event -> sauvegarderSolution(primaryStage));
+
         // Ajouter les éléments au layout principal
         root.getChildren().addAll(btnChargerFichier, btnAccederAppManuel, btnOptimiserSolution,
                 btnSauvegarderSolution, textArea);
 
-        // Configurer la scène
         Scene scene = new Scene(root, 600, 400);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
     /**
-     * Permet de charger un fichier contenant les données de la colonie.
-     * Cette méthode ouvre une boîte de dialogue permettant de sélectionner un fichier texte,
-     * puis charge les données de la colonie à partir du fichier choisi.
-     * 
+     * Ouvre une boîte de dialogue pour permettre à l'utilisateur de charger un fichier.
+     * Le fichier chargé doit contenir des données valides pour initialiser une colonie.
+     *
      * @param stage La fenêtre principale de l'application.
      */
     private void chargerFichier(Stage stage) {
@@ -97,6 +107,11 @@ public class App extends Application {
             try {
                 AnaliseFichier analyse = new AnaliseFichier(fichier.getAbsolutePath());
                 colonie = analyse.analiseFichier();
+
+                if (colonie == null || colonie.getColons().isEmpty()) {
+                    throw new IllegalArgumentException("Le fichier chargé ne contient pas de données valides.");
+                }
+
                 afficherMessage("Données de la colonie chargées depuis le fichier : " + fichier.getName());
             } catch (IOException | IllegalArgumentException e) {
                 afficherMessage("Erreur lors de la lecture du fichier : " + e.getMessage());
@@ -105,22 +120,22 @@ public class App extends Application {
     }
 
     /**
-     * Permet de générer une solution optimisée pour la colonie chargée.
-     * Cette méthode crée une instance de la classe SolutionOptimise et génère une solution en fonction des données de la colonie.
+     * Génère une solution optimisée pour la colonie chargée.
+     * Utilise la classe {@link SolutionOptimise} pour calculer une solution basée sur les données actuelles.
      */
     private void optimiserSolution() {
         if (colonie != null) {
             SolutionOptimise optimise = new SolutionOptimise(colonie);
-            solution = optimise.optimiseSolution(colonie.getColons().size() * 10);
+            solution = optimise.optimiseSolution2(colonie.getColons().size() * 10);
             afficherMessage("Solution optimisée : " + solution);
             afficherMessage("Coût de la solution : " + colonie.calculerCout());
         }
     }
 
     /**
-     * Permet de sauvegarder la solution optimisée dans un fichier texte.
-     * Cette méthode ouvre une boîte de dialogue permettant de sélectionner l'emplacement et le nom du fichier de sauvegarde.
-     * 
+     * Sauvegarde la solution optimisée dans un fichier texte.
+     * Ouvre une boîte de dialogue pour permettre à l'utilisateur de choisir l'emplacement et le nom du fichier.
+     *
      * @param stage La fenêtre principale de l'application.
      */
     private void sauvegarderSolution(Stage stage) {
@@ -142,17 +157,19 @@ public class App extends Application {
     }
 
     /**
-     * Affiche un message dans la console.
-     * 
+     * Affiche un message dans la console et dans la zone de texte de l'interface utilisateur.
+     *
      * @param message Le message à afficher.
      */
     private void afficherMessage(String message) {
-        System.out.println(message);
+        System.out.println(message); // Affiche dans la console
+        textArea.appendText(message + "\n"); // Ajoute dans la zone de texte
     }
 
     /**
-     * Méthode principale d'entrée de l'application JavaFX.
-     * 
+     * Méthode principale de l'application.
+     * Lance l'interface graphique JavaFX.
+     *
      * @param args Les arguments de ligne de commande.
      */
     public static void main(String[] args) {

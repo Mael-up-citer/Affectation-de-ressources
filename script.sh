@@ -1,14 +1,17 @@
-#!/bin/bash
-
 # Chemins des dossiers
 SRC_DIR="src"
 BIN_DIR="bin"
 MAIN_CLASS="partie2.Main"
-JAVA_FX_DIR="javafx-sdk-21.0.5/lib"  # Remplace par le chemin vers ton dossier lib de JavaFX
-JAVA_FX_LIBS="$JAVA_FX_DIR/*"  # On inclut toutes les bibliothèques de JavaFX
 
-# Compiler les fichiers Java
-javac -d "$BIN_DIR" --module-path "$JAVA_FX_DIR" --add-modules javafx.controls,javafx.fxml $(find "$SRC_DIR" -name "*.java")
+# Compiler les fichiers Java de partie1 et partie2 (sans inclure app)
+javac -d "$BIN_DIR" $(find "$SRC_DIR/partie1" "$SRC_DIR/partie2" -name "*.java")
 
-# Exécuter le fichier App.class
-java --module-path "$JAVA_FX_DIR" --add-modules javafx.controls,javafx.fxml -cp "$BIN_DIR" "$MAIN_CLASS"
+
+# Vérifier le nombre d'arguments
+if [ $# -gt 0 ]; then
+    # Exécuter le fichier Main.class en passant l'argument s'il existe
+    java -cp "$BIN_DIR" "$MAIN_CLASS" "$1"
+else
+    # Exécuter le fichier Main.class sans arg
+    java -cp "$BIN_DIR" "$MAIN_CLASS"
+fi

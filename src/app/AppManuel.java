@@ -10,16 +10,28 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.*;
 
+/**
+ * La classe AppManuel gère une interface utilisateur JavaFX pour configurer et simuler 
+ * une colonie de colons, leurs préférences, leurs relations, et leurs affectations de ressources.
+ * Elle utilise la classe Colonie pour manipuler les données sous-jacentes.
+ */
 public class AppManuel {
 
 	private Colonie colonie;
 	private Map<String, String> solution;
-
+	
+	/**
+     * Constructeur par défaut initialisant une nouvelle colonie.
+     */
 	public AppManuel() {
-		System.out.println("uuu");
 		colonie = new Colonie();
 	}
-
+	
+	/**
+     * Affiche l'écran principal pour entrer le nombre de colons.
+     *
+     * @param stage La fenêtre principale de l'application.
+     */
 	public void afficher(Stage stage) {
 
 		VBox mainLayout = new VBox(10);
@@ -61,14 +73,25 @@ public class AppManuel {
 		stage.setScene(scene);
 		stage.show();
 	}
-
+	
+	/**
+     * Initialise les ressources pour la colonie en fonction du nombre de colons.
+     *
+     * @param nombreColons Le nombre total de colons.
+     */
 	private void initialiserRessources(int nombreColons) {
 		colonie.getRessources().clear();
 		for (int i = 1; i <= nombreColons; i++) {
 			colonie.ajouterRessource(String.valueOf(i));
 		}
 	}
-
+	
+	/**
+     * Affiche le menu de configuration pour ajouter des relations, des préférences, 
+     * ou terminer la configuration.
+     *
+     * @param stage La fenêtre principale de l'application.
+     */
 	private void afficherMenuConfiguration(Stage stage) {
 		VBox configLayout = new VBox(10);
 		configLayout.setStyle("-fx-padding: 10; -fx-spacing: 10;");
@@ -96,7 +119,12 @@ public class AppManuel {
 		configLayout.getChildren().addAll(menuLabel, addRelationButton, addPreferencesButton, finishButton);
 		stage.getScene().setRoot(configLayout);
 	}
-
+	
+	/**
+     * Affiche un formulaire pour ajouter une relation entre deux colons.
+     *
+     * @param primaryStage La fenêtre principale de l'application.
+     */
 	private void afficherAjoutRelation(Stage primaryStage) {
 		VBox relationLayout = new VBox(10);
 
@@ -122,7 +150,12 @@ public class AppManuel {
 		relationLayout.getChildren().addAll(titleLabel, relationField, addButton, errorLabel);
 		primaryStage.getScene().setRoot(relationLayout);
 	}
-
+	
+	/**
+     * Affiche un formulaire pour ajouter les préférences d'un colon.
+     *
+     * @param primaryStage La fenêtre principale de l'application.
+     */
 	private void afficherAjoutPreferences(Stage primaryStage) {
 		VBox preferencesLayout = new VBox(10);
 
@@ -147,7 +180,13 @@ public class AppManuel {
 		preferencesLayout.getChildren().addAll(titleLabel, preferencesField, addButton, errorLabel);
 		primaryStage.getScene().setRoot(preferencesLayout);
 	}
-
+	
+	/**
+     * Affiche le menu de simulation où l'utilisateur peut simuler les échanges 
+     * de ressources, vérifier les colons jaloux, ou terminer la simulation.
+     *
+     * @param primaryStage La fenêtre principale de l'application.
+     */
 	private void afficherMenuSimulation(Stage primaryStage) {
 		VBox simulationLayout = new VBox(10);
 		simulationLayout.setStyle("-fx-padding: 10; -fx-spacing: 10;");
@@ -175,7 +214,13 @@ public class AppManuel {
 
 		primaryStage.getScene().setRoot(simulationLayout);
 	}
-
+	
+	/**
+     * Affiche un formulaire pour échanger les ressources entre deux colons.
+     *
+     * @param primaryStage La fenêtre principale de l'application.
+     * @param affectationsArea La zone de texte pour afficher les affectations actuelles.
+     */
 	private void afficherEchangeRessources(Stage primaryStage, TextArea affectationsArea) {
 		VBox exchangeLayout = new VBox(10);
 
@@ -215,7 +260,12 @@ public class AppManuel {
 		exchangeLayout.getChildren().addAll(titleLabel, exchangeField, exchangeButton, errorLabel);
 		primaryStage.getScene().setRoot(exchangeLayout);
 	}
-
+	
+	/**
+     * Met à jour l'affichage des affectations de ressources dans une zone de texte.
+     *
+     * @param affectationsArea La zone de texte où afficher les affectations.
+     */
 	private void updateAffectationsDisplay(TextArea affectationsArea) {
 		// Capture the output of afficherAffectations() and redirect to the TextArea
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -230,7 +280,10 @@ public class AppManuel {
 		// Restore the original System.out
 		System.setOut(System.out);
 	}
-
+	
+	/**
+     * Affiche une alerte contenant le nombre de colons jaloux calculé par la colonie.
+     */
 	private void afficherColonsJaloux() {
 		Alert alert = new Alert(Alert.AlertType.INFORMATION);
 		alert.setContentText("Nombre de colons jaloux : " + colonie.calculerCout());
