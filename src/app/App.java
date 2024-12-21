@@ -22,42 +22,50 @@ import java.util.Map;
  * de générer une solution optimisée et de sauvegarder cette solution dans un fichier.
  */
 public class App extends Application {
-    private Colonie colonie; // Représente la colonie chargée
-    private Map<String, String> solution; // Stocke la solution optimisée
-    private TextArea textArea; // Zone de texte pour afficher les messages à l'utilisateur
+
+    /**
+     * Objet représentant la colonie chargée depuis un fichier.
+     */
+    private Colonie colonie;
+
+    /**
+     * Solution optimisée générée pour la colonie.
+     * Les clés et valeurs représentent des informations spécifiques à la solution.
+     */
+    private Map<String, String> solution;
+
+    /**
+     * Zone de texte permettant d'afficher des messages d'information ou d'erreur à l'utilisateur.
+     */
+    private TextArea textArea;
 
     /**
      * Point d'entrée principal de l'application JavaFX.
-     *
-     * @param primaryStage La fenêtre principale de l'application.
+     * @param primaryStage la fenêtre principale de l'application
      */
     @Override
     public void start(Stage primaryStage) {
         colonie = new Colonie();
         solution = null;
 
-        // Titre de la fenêtre principale
         primaryStage.setTitle("Gestion de Colonie");
 
-        // Layout principal
         VBox root = new VBox(10);
         root.setPadding(new Insets(15));
 
-        // Bouton pour charger un fichier
+        // Boutons de l'application
         Button btnChargerFichier = new Button("Charger un fichier");
         Button btnOptimiserSolution = new Button("Résolution automatique");
         Button btnSauvegarderSolution = new Button("Sauvegarder la solution");
 
-        // Configuration initiale des boutons
+        // Désactiver les boutons jusqu'à ce qu'une action préalable soit réalisée
         btnOptimiserSolution.setDisable(true);
         btnSauvegarderSolution.setDisable(true);
 
-        // Zone de texte pour afficher les informations
         textArea = new TextArea();
         textArea.setEditable(false);
         textArea.setPrefHeight(300);
 
-        // Bouton pour accéder à l'interface utilisateur manuelle
         Button btnAccederAppManuel = new Button("Accéder à l'Interface Utilisateur");
         btnAccederAppManuel.setOnAction(event -> {
             Stage appManuelStage = new Stage();
@@ -65,7 +73,7 @@ public class App extends Application {
             appManuel.afficher(appManuelStage);
         });
 
-        // Actions des boutons
+        // Gestion des actions des boutons
         btnChargerFichier.setOnAction(event -> {
             chargerFichier(primaryStage);
             if (colonie != null && !colonie.getColons().isEmpty()) {
@@ -82,9 +90,9 @@ public class App extends Application {
 
         btnSauvegarderSolution.setOnAction(event -> sauvegarderSolution(primaryStage));
 
-        // Ajouter les éléments au layout principal
-        root.getChildren().addAll(btnChargerFichier, btnAccederAppManuel, btnOptimiserSolution,
-                btnSauvegarderSolution, textArea);
+        // Ajouter les composants à l'interface
+        root.getChildren().addAll(btnChargerFichier, btnAccederAppManuel, btnOptimiserSolution, 
+                                   btnSauvegarderSolution, textArea);
 
         Scene scene = new Scene(root, 600, 400);
         primaryStage.setScene(scene);
@@ -92,15 +100,12 @@ public class App extends Application {
     }
 
     /**
-     * Ouvre une boîte de dialogue pour permettre à l'utilisateur de charger un fichier.
-     * Le fichier chargé doit contenir des données valides pour initialiser une colonie.
-     *
-     * @param stage La fenêtre principale de l'application.
+     * Ouvre un sélecteur de fichier pour charger un fichier de colonie et analyser son contenu.
+     * @param stage la fenêtre de l'application pour afficher le sélecteur de fichier
      */
     private void chargerFichier(Stage stage) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choisir un fichier de colonie");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichiers texte", "*.txt"));
         File fichier = fileChooser.showOpenDialog(stage);
 
         if (fichier != null) {
@@ -121,22 +126,19 @@ public class App extends Application {
 
     /**
      * Génère une solution optimisée pour la colonie chargée.
-     * Utilise la classe {@link SolutionOptimise} pour calculer une solution basée sur les données actuelles.
      */
     private void optimiserSolution() {
         if (colonie != null) {
             SolutionOptimise optimise = new SolutionOptimise(colonie);
-            solution = optimise.optimiseSolution2(colonie.getColons().size() * 10);
+            solution = optimise.optimiseSolution(colonie.getColons().size() * 10);
             afficherMessage("Solution optimisée : " + solution);
             afficherMessage("Coût de la solution : " + colonie.calculerCout());
         }
     }
 
     /**
-     * Sauvegarde la solution optimisée dans un fichier texte.
-     * Ouvre une boîte de dialogue pour permettre à l'utilisateur de choisir l'emplacement et le nom du fichier.
-     *
-     * @param stage La fenêtre principale de l'application.
+     * Sauvegarde la solution optimisée dans un fichier choisi par l'utilisateur.
+     * @param stage la fenêtre de l'application pour afficher le sélecteur de fichier
      */
     private void sauvegarderSolution(Stage stage) {
         if (solution != null) {
@@ -147,6 +149,7 @@ public class App extends Application {
 
             if (fichier != null) {
                 try {
+                    // Si le fichier n'existe pas, il sera créé automatiquement.
                     SolutionSauvegarde.sauvegardeSolution(fichier.getAbsolutePath(), solution);
                     afficherMessage("Solution sauvegardée dans le fichier : " + fichier.getName());
                 } catch (IOException e) {
@@ -157,22 +160,20 @@ public class App extends Application {
     }
 
     /**
-     * Affiche un message dans la console et dans la zone de texte de l'interface utilisateur.
-     *
-     * @param message Le message à afficher.
+     * Affiche un message dans la zone de texte de l'application et dans la console.
+     * @param message le message à afficher
      */
     private void afficherMessage(String message) {
-        System.out.println(message); // Affiche dans la console
-        textArea.appendText(message + "\n"); // Ajoute dans la zone de texte
+        System.out.println(message);
+        textArea.appendText(message + "\n");
     }
 
     /**
-     * Méthode principale de l'application.
-     * Lance l'interface graphique JavaFX.
-     *
-     * @param args Les arguments de ligne de commande.
+     * Méthode principale permettant de lancer l'application JavaFX.
+     * @param args arguments de la ligne de commande
      */
     public static void main(String[] args) {
         launch(args);
     }
 }
+

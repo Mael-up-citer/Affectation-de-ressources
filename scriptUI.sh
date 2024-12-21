@@ -4,7 +4,9 @@
 SRC_DIR="src"
 BIN_DIR="bin"
 MAIN_CLASS="app.App"
-JAVA_FX_DIR="javafx-sdk-21.0.5/lib"  # Remplace par le chemin vers ton dossier lib de JavaFX
+JAVA_FX_DIR="/usr/local/javafx/javafx-sdk-11.0.1/lib"
+#javafx-sdk-21.0.5/lib
+# Remplace par le chemin vers ton dossier lib de JavaFX
 JAVA_FX_LIBS="$JAVA_FX_DIR/*"  # On inclut toutes les bibliothèques de JavaFX
 
 # Compiler les fichiers Java
