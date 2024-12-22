@@ -130,7 +130,7 @@ public class App extends Application {
     private void optimiserSolution() {
         if (colonie != null) {
             SolutionOptimise optimise = new SolutionOptimise(colonie);
-            solution = optimise.optimiseSolution(colonie.getColons().size() * 10);
+            solution = optimise.genererSolutionAdaptative();
             afficherMessage("Solution optimisée : " + solution);
             afficherMessage("Coût de la solution : " + colonie.calculerCout());
         }

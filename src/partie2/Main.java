@@ -44,7 +44,7 @@ public class Main {
                     switch (choix) {
                         case 1 -> {
                             SolutionOptimise optimise = new SolutionOptimise(colonie);
-                            solution = optimise.optimiseSolution2(colonie.getColons().size() * colonie.getColons().size());
+                            solution = optimise.genererSolutionAdaptative();
                             System.out.println("Solution optimisée : " + solution);
                             System.out.println("Coût de la solution : " + colonie.calculerCout());
                         }
