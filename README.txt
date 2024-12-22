@@ -18,9 +18,10 @@ Tâches à réaliser:
         3. Optimiser la distribution pour minimiser les conflits.  
 
     Fonctionnalités clés :  
-        - Importation des données depuis un fichier texte.  
+        - Importation des données depuis un fichier.  
         - Recherche automatisée d’une solution optimisée.  
         - Gestion des erreurs pour assurer la robustesse du programme.
+	- Sauvegarde d'une solution dans un fichier
 
 ---
 
@@ -50,4 +51,4 @@ L'algorithme, situé dans la classe `SolutionOptimise` (méthode `optimiseSoluti
     4. Selon le rapport qualité/temps, cette méthode prend en entrée un nombre d'itérations. Plus ce nombre est grand, plus le nombre de solutions testées sera élevé, mais cela entraînera également un temps de calcul plus long.
 
 L'algorithme, situé dans la classe SolutionOptimise (méthode rechercheExhaustive), est basé sur une approche combinatoire visant à minimiser les jalousies :
-On teste toutes les combinaisons possibles afin de trouver la meilleure. Uniquement si la colonie est <= 10 colons en raison d'un coup de cacul exponentiel.
+On teste toutes les combinaisons possibles afin de trouver la meilleure. Uniquement si la colonie est <= 10 colons en raison d'un coup de calcul exponentiel.
