@@ -141,36 +141,49 @@ public class Colonie {
     }
 
     /**
-     * Calcule le coût de l'affectation actuelle.
-     *
-     * @return le nombre de colons jaloux.
-     */
-    public int calculerCout() {
-        colonsJaloux.clear();
+	 * Calcule le coût de l'affectation actuelle.
+	 *
+	 * @return le nombre de colons jaloux.
+	 */
+	public int calculerCout() {
+		Set<String> colonsJaloux = new HashSet<>();
 
-        for (Set<String> relation : relations) {
-            Iterator<String> it = relation.iterator();
-            String colon1 = it.next();
-            String colon2 = it.next();
+		for (Set<String> relation : relations) {
+			// Une relation est un ensemble de deux colons
+			Iterator<String> it = relation.iterator();
+			String colon1 = it.next();
+			String colon2 = it.next();
 
-            if (affectations.containsKey(colon1) && affectations.containsKey(colon2)) {
-                Colon c1 = colons.get(colon1);
-                Colon c2 = colons.get(colon2);
+			// Vérifiez que les deux colons ont une ressource affectée
+			if (affectations.containsKey(colon1) && affectations.containsKey(colon2)) {
+				String ressource1 = affectations.get(colon1);
+				String ressource2 = affectations.get(colon2);
 
-                int indColon1 = c1.getPreferences().indexOf(affectations.get(colon1));
-                int indColon2 = c2.getPreferences().indexOf(affectations.get(colon2));
+				Colon c1 = colons.get(colon1);
+				Colon c2 = colons.get(colon2);
 
-                if (indColon2 < indColon1) {
-                    colonsJaloux.add(c1);
-                }
-                if (indColon1 < indColon2) {
-                    colonsJaloux.add(c2);
-                }
-            }
-        }
-        return colonsJaloux.size();
-    }
+				// Trouvez l'indice des ressources dans les préférences des colons
+				int indR1PourC1 = c1.getPreferences().indexOf(ressource1);
+				int indR2PourC1 = c1.getPreferences().indexOf(ressource2);
 
+				int indR2PourC2 = c2.getPreferences().indexOf(ressource2);
+				int indR1PourC2 = c2.getPreferences().indexOf(ressource1);
+
+				// Vérifiez si colon1 est jaloux de colon2
+				if (indR2PourC1 != -1 && indR1PourC1 != -1 && indR2PourC1 < indR1PourC1) {
+					colonsJaloux.add(colon1);
+				}
+
+				// Vérifiez si colon2 est jaloux de colon1
+				if (indR1PourC2 != -1 && indR2PourC2 != -1 && indR1PourC2 < indR2PourC2) {
+					colonsJaloux.add(colon2);
+				}
+			}
+		}
+
+		// Retourne la taille de l'ensemble des colons jaloux
+		return colonsJaloux.size();
+	}
     /**
      * Affiche les affectations actuelles des colons.
      */
