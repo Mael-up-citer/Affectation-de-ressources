@@ -21,25 +21,30 @@ Tâches à réaliser:
         - Importation des données depuis un fichier.  
         - Recherche automatisée d’une solution optimisée.  
         - Gestion des erreurs pour assurer la robustesse du programme.
-	- Sauvegarde d'une solution dans un fichier
+	    - Sauvegarde d'une solution dans un fichier
 
 ---
 
 Prérequis  
     1. Java : Version 11 ou supérieure, configurée dans les variables d'environnement.  
-    2. Bash : Pour exécuter les scripts de compilation et d’exécution.  
+    2. (Optionnel) Bash : Si vous souhaitez utiliser nos scripts de compilation et d’exécution.  
     3. JDK : Compatible avec la version de Java installée.  
     4. (Optionnel) : Éditeur/IDE tel que VS Code, IntelliJ IDEA, ou Eclipse pour consulter ou modifier le code source.  
 
 ---
 
 Exécution
-    1. Assurez-vous de rendre les scripts exécutables avec `chmod u+x script.sh scriptUI.sh`.  
-    2. Deux options sont disponibles pour lancer le programme :  
-        - Sans affichage graphique : Utilisez `./script.sh` (un fichier de colonie peut être fourni en argument).
-        - Avec affichage graphique : Utilisez `./scriptUI.sh` (les arguments passés seront ignorés).
-
-    3. Les tests unitaires sont exécutables avec ./runTest.sh.
+    Avec bash:
+        1. Assurez-vous de rendre les scripts exécutables avec `chmod u+x <nom.sh>`.  
+        2. Deux options sont disponibles pour lancer le programme :  
+            - Sans affichage graphique : Utilisez `./script.sh` (un chemin vers un fichier de colonie peut être fourni en argument).
+            - Avec affichage graphique : Utilisez `./scriptUI.sh` (les arguments passés seront ignorés).
+        3. Les tests unitaires sont exécutables avec ./runTest.sh.
+    
+    Sans:
+        1. Pour l'application avec la GUI le main ce trouve dans app/App.java
+        2. Pour l'application sans la GUI le main ce trouve dans partie2/Main.java
+        3. Les arguments passé lors de l'éxécution suivent la même règle que précédement.
 
 ---
 
