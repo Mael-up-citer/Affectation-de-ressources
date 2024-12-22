@@ -16,23 +16,6 @@ import java.util.List;
 public class SolutionOptimise {
     private Colonie colonie;
 
-    private static Map<String, String> meilleureSolutionConnue = new HashMap<>();
-    static {
-        meilleureSolutionConnue.put("0", "o6");
-        meilleureSolutionConnue.put("1", "o3");
-        meilleureSolutionConnue.put("2", "o1");
-        meilleureSolutionConnue.put("3", "o2");
-        meilleureSolutionConnue.put("4", "o10");
-        meilleureSolutionConnue.put("5", "o4");
-        meilleureSolutionConnue.put("6", "o7");
-        meilleureSolutionConnue.put("7", "o8");
-        meilleureSolutionConnue.put("8", "o9");
-        meilleureSolutionConnue.put("9", "o5");
-    }
-
-    int meilleurCoutAttendu = 1;
-
-
     /**
      * Constructeur de la classe SolutionOptimise.
      * @param colonie La colonie contenant les colons, les ressources, et les préférences à optimiser.
@@ -49,9 +32,47 @@ public class SolutionOptimise {
             return rechercheExhaustive();
         } else {
             // Utiliser une optimisation probabiliste pour les grands cas
-            //return optimiseSolution2(nombreColons * nombreColons); // Nombre d'itérations arbitraire
-            return null;
+            return optimiseSolution2(nombreColons * nombreColons); // Nombre d'itérations arbitraire
         }
+    }
+
+    /**
+     * Effectue une recherche exhaustive pour trouver l'affectation optimale des ressources
+     * minimisant les jalousies parmi les colons.
+     */
+    public Map<String, String> rechercheExhaustive() {
+        List<String> nomsColons = new ArrayList<>(colonie.getColons().keySet());
+        List<String> nomsRessources = new ArrayList<>(colonie.getRessources());
+
+        if (nomsColons.size() != nomsRessources.size())
+            throw new IllegalArgumentException("Le nombre de colons et de ressources doit être égal.");
+
+        List<List<String>> permutations = genererPermutations(nomsRessources);
+        Map<String, String> meilleureAffectation = null;
+        int minJalousie = Integer.MAX_VALUE;
+
+        for (List<String> permutation : permutations) {
+            Map<String, String> affectationTemporaire = new HashMap<>();
+            for (int i = 0; i < nomsColons.size(); i++) {
+                affectationTemporaire.put(nomsColons.get(i), permutation.get(i));
+            }
+
+            colonie.setAffectations(affectationTemporaire);
+            int jalousie = colonie.calculerCout();
+
+            if (jalousie < minJalousie) {
+                minJalousie = jalousie;
+                meilleureAffectation = new HashMap<>(affectationTemporaire);
+
+                // Arrêt si jalousie minimale possible
+                if (minJalousie == 0)
+                    break;
+            }
+        }
+        if (meilleureAffectation != null) {
+            colonie.setAffectations(meilleureAffectation);
+        }
+        return meilleureAffectation;
     }
 
     /**
@@ -60,7 +81,7 @@ public class SolutionOptimise {
      *
      * @param iterations Le nombre d'itérations pour l'optimisation.
      * @return La map des affectations optimisées.
-     *//*
+     */
     public Map<String, String> optimiseSolution2(int iterations) {
         Map<String, String> actuelleSolution = colonie.genererSolutionNaive();
         int actuelleCout = colonie.calculerCout();
@@ -147,7 +168,7 @@ public class SolutionOptimise {
     /**
      * Méthode pour choisir un colon avec 80% de chance parmi les jaloux,
      * et 20% parmi la population totale.
-     *//*
+     */
     private String choisirColon(Random random) {
         if (!colonie.getColonsJaloux().isEmpty() && random.nextDouble() < 0.8) {
             List<Colon> jaloux = new ArrayList<>(colonie.getColonsJaloux());
@@ -156,66 +177,6 @@ public class SolutionOptimise {
             List<String> tousLesColons = new ArrayList<>(colonie.getColons().keySet());
             return tousLesColons.get(random.nextInt(tousLesColons.size()));
         }
-    }
-*/
-    /**
-     * Effectue une recherche exhaustive pour trouver l'affectation optimale des ressources
-     * minimisant les jalousies parmi les colons.
-     */
-    public Map<String, String> rechercheExhaustive() {
-        List<String> nomsColons = new ArrayList<>(colonie.getColons().keySet());
-        List<String> nomsRessources = new ArrayList<>(colonie.getRessources());
-
-        if (nomsColons.size() != nomsRessources.size())
-            throw new IllegalArgumentException("Le nombre de colons et de ressources doit être égal.");
-
-        List<List<String>> permutations = genererPermutations(nomsRessources);
-        Map<String, String> meilleureAffectation = null;
-        int minJalousie = Integer.MAX_VALUE;
-
-        for (List<String> permutation : permutations) {
-            Map<String, String> affectationTemporaire = new HashMap<>();
-            for (int i = 0; i < nomsColons.size(); i++) {
-                affectationTemporaire.put(nomsColons.get(i), permutation.get(i));
-            }
-
-            colonie.setAffectations(affectationTemporaire);
-            int jalousie = colonie.calculerCout();
-
-             // Vérification explicite
-            if (affectationTemporaire.equals(meilleureSolutionConnue)) {
-                System.out.println("Solution attendue rencontrée : " + affectationTemporaire);
-                System.out.println("Coût calculé : " + jalousie + ", coût attendu : " + meilleurCoutAttendu);
-            }
-
-            if (jalousie < minJalousie) {
-                minJalousie = jalousie;
-                meilleureAffectation = new HashMap<>(affectationTemporaire);
-
-                // Arrêt si jalousie minimale possible
-                if (minJalousie == 0)
-                    break;
-            }
-        }
-        if (meilleureAffectation != null) {
-            colonie.setAffectations(meilleureAffectation);
-        }
-        return meilleureAffectation;
-    }
-
-    /**
-     * Crée une affectation à partir des noms des colons et d'une permutation de ressources.
-     *
-     * @param nomsColons La liste des noms des colons.
-     * @param permutation La permutation actuelle des ressources.
-     * @return Une Map représentant l'affectation actuelle.
-     */
-    private Map<String, String> creerAffectation(List<String> nomsColons, List<String> permutation) {
-        Map<String, String> affectation = new HashMap<>();
-        for (int i = 0; i < nomsColons.size(); i++) {
-            affectation.put(nomsColons.get(i), permutation.get(i));
-        }
-        return affectation;
     }
 
     /**

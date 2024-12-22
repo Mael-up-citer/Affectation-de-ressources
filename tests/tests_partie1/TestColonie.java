@@ -1,8 +1,6 @@
 package tests_partie1;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
 import java.util.List;
 import java.util.Set;
 
@@ -148,7 +146,7 @@ class TestColonie {
 
         // Vérification du coût (devrait être supérieur à 0 en raison du conflit)
         int cout = colonie.calculerCout();
-        assertThat(cout, greaterThan(0));
+        assertTrue(cout > 0, "Le coût doit être supérieur à 0");
     }
 
     /**
